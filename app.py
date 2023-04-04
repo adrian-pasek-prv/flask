@@ -28,6 +28,26 @@ def create_store():
     return new_store, 201
 
 
-@app.post('store/<string:name>/item') # string:name allows us to access name var in the URL
+@app.post('/store/<string:name>/item') # string:name allows us to access name var in the URL
 def create_item(name):
-    pass
+    request_data = request.get_json()
+    for store in stores:
+        if store['name'] == name:
+            new_item = {'name': request_data['name'], 'price': request_data['price']}
+            store['items'].append(new_item)
+            return new_item, 201
+    return {'message": "Store not found'}, 404
+
+@app.get('/store/<string:name>') # string:name allows us to access name var in the URL
+def get_store(name):
+    for store in stores:
+        if store['name'] == name:
+            return store
+    return {'message": "Store not found'}, 404
+
+@app.get('/store/<string:name>/item') # string:name allows us to access name var in the URL
+def get_store_items(name):
+    for store in stores:
+        if store['name'] == name:
+            return {'items': store['items']}
+    return {'message": "Store not found'}, 404
