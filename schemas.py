@@ -1,5 +1,5 @@
 # Marshmellow is a tool that enables data validation using Schemas
-from marshmellow import Schema, fields
+from marshmallow import Schema, fields
 
 # Config an ItemSchema class that will dictate how an item should look like
 class ItemSchema(Schema):
