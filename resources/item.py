@@ -13,6 +13,7 @@ blp = Blueprint('items', __name__, description='Operations on items')
 # to Item class methods
 @blp.route('/item/<string:item_id>')
 class Item(MethodView):
+    @blp.response(200, ItemSchema) # Decorate a successful response
     def get(self, item_id):
         try:
             return items[item_id]
@@ -27,7 +28,8 @@ class Item(MethodView):
             abort(404, message='Item not found.')
     
     # Decorate function with ItemUpdateSchema marshmellow validation that returns validated "item_data" json
-    @blp.arguments(ItemUpdateSchema)        
+    @blp.arguments(ItemUpdateSchema)  
+    @blp.response(200, ItemUpdateSchema)      
     def put(self, item_data, item_id): 
         try:
             items[item_id] = item_data
@@ -38,11 +40,13 @@ class Item(MethodView):
 
 @blp.route('/item')
 class ItemList(MethodView):
+    @blp.response(200, ItemSchema(many=True)) # return list of items not a single item, thus we create instance of ItemSchema with many=True
     def get(self):
-        return {"items": list(items.values())}
+        return items.values()
     
     # Decorate function with ItemSchema marshmellow validation that returns validated "item_data" json
     @blp.arguments(ItemSchema)
+    @blp.response(201, ItemSchema)
     def post(self, item_data):
         for item in items.values():
             if (

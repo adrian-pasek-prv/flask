@@ -13,6 +13,7 @@ blp = Blueprint('stores', __name__, description='Operations on stores')
 # to Store class methods
 @blp.route('/store/<string:store_id>')
 class Store(MethodView):
+    @blp.response(200, StoreSchema)
     def get(self, store_id):
         try:
             return stores[store_id]
@@ -28,11 +29,13 @@ class Store(MethodView):
 
 @blp.route('/store')
 class StoreList(MethodView):
+    @blp.response(200, StoreSchema(many=True)) # return list of stores not a single store, thus we create instance of StoreSchema with many=True
     def get(self):
-        return {"stores": list(stores.values())}
+        return stores.values()
     
     # Decorate function with StoreSchema marshmellow validation that returns validated "store_data" json
     @blp.arguments(StoreSchema)
+    @blp.response(200, StoreSchema)
     def post(self, store_data):
         for store in stores.values():
             if store_data['name'] == store['name']:
