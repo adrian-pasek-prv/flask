@@ -2,7 +2,10 @@ import uuid
 from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from sqlalchemy.exc import SQLAlchemyError
 
+from db import db
+from models import ItemModel
 from schemas import ItemSchema, ItemUpdateSchema
 
 
@@ -47,20 +50,16 @@ class ItemList(MethodView):
     @blp.arguments(ItemSchema)
     @blp.response(201, ItemSchema)
     def post(self, item_data):
-        for item in items.values():
-            if (
-                item_data['name'] == item['name']
-                and item_data['store_id'] == item['store_id']
-            ):
-                item_name = item_data['name']
-                store_id = item_data['store_id']
-                abort(400, message=f"Item '{item_name}' already exists in store '{store_id}'")
-                
-        if item_data['store_id'] not in stores:
-            abort(404, message='Store not found.')
-    
-        item_id = uuid.uuid4().hex
-        item = {**item_data, 'id': item_id}
-        items[item_id] = item
+        # We will use ItemModel to transform received data into an item fit for a databaase
+        # **item_data will unpack the object into keyword arguments that ItemModel accepts
+        # and uses them later for creating an item in database
+        item = ItemModel(**item_data)
+        
+        # Try to insert item into database
+        try:
+            db.session.add(item)
+            db.session.commit()
+        except SQLAlchemyError:
+            abort(500, message='An error occured while inserting the item.')
         
         return item

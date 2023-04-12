@@ -36,13 +36,21 @@ class StoreList(MethodView):
     @blp.arguments(StoreSchema)
     @blp.response(200, StoreSchema)
     def post(self, store_data):
-        for store in stores.values():
-            if store_data['name'] == store['name']:
-                store_name = store_data['name']
-                abort(400, message=f"Store '{store_name}' already exists.")
-                
-        store_id = uuid.uuid4().hex
-        store = {**store_data, 'id': store_id}
-        stores[store_id] = store
+        # We will use StoreModel to transform received data into a store fit for a databaase
+        # **store_data will unpack the object into keyword arguments that StoreModel accepts
+        # and uses them later for creating a store in database
+        store = StoreModel(**store_data)
+        
+        # Try to insert store into database
+        try:
+            db.session.add(store)
+            db.session.commit()
+        # Catch exception related to integrity of database 
+        # In this case it's uniquness of store
+        except IntegrityError:
+            abort(400,
+                  message='A store with that name already exists.')
+        except SQLAlchemyError:
+            abort(500, message='An error occured while inserting the store.')
 
         return store
