@@ -10,3 +10,4 @@ class StoreModel(db.Model):
     # Create a relationship to stores but set it to lazy=dynamic so that it will
     # show items when we tell it to
     items = db.relationship('ItemModel', back_populates='store', lazy='dynamic', cascade='all, delete') # cascade means delete all items if we delete store
+    tags = db.relationship('TagModel', back_populates='store', lazy='dynamic') # back_populates='store' refres to store variable in TagModel class

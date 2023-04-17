@@ -2,3 +2,4 @@
 # Instead of from models.item import ItemModel we will be able to do from models import ItemModel
 from models.store import StoreModel
 from models.item import ItemModel
+from models.tag import TagModel

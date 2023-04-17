@@ -1,7 +1,6 @@
-import uuid
-from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from sqlalchemy.exc import SQLAlchemyError
 
 from db import db
 from models import StoreModel
@@ -18,7 +17,7 @@ class Store(MethodView):
     @blp.response(200, StoreSchema)
     def get(self, store_id):
     # Use Flask SQLAlchemy query method to retrive item from DB:
-        store = StoreModel.get_or_404(store_id)
+        store = StoreModel.query.get_or_404(store_id)
         return store
     
     def delete(self, store_id):
