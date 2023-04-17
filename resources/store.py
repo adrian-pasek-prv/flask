@@ -29,7 +29,8 @@ class Store(MethodView):
 class StoreList(MethodView):
     @blp.response(200, StoreSchema(many=True)) # return list of stores not a single store, thus we create instance of StoreSchema with many=True
     def get(self):
-        return stores.values()
+        # .query.all() enables to query a list of items and pass it to ItemSchema where many=True
+        return StoreModel.query.all()
     
     # Decorate function with StoreSchema marshmellow validation that returns validated "store_data" json
     @blp.arguments(StoreSchema)

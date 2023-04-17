@@ -48,7 +48,8 @@ class Item(MethodView):
 class ItemList(MethodView):
     @blp.response(200, ItemSchema(many=True)) # return list of items not a single item, thus we create instance of ItemSchema with many=True
     def get(self):
-        return items.values()
+        # .query.all() enables to query a list of items and pass it to ItemSchema where many=True
+        return ItemModel.query.all()
     
     # Decorate function with ItemSchema marshmellow validation that returns validated "item_data" json
     @blp.arguments(ItemSchema)
