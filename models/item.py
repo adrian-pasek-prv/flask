@@ -11,3 +11,4 @@ class ItemModel(db.Model):
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), unique=False, nullable=False) # ForeignKey allows to map store_id to stores table
     # Create a relationship to stores table so that it will populate stores data here
     store = db.relationship('StoreModel', back_populates='items')
+    tags = db.relationship('TagModel', back_populates='items', secondary='items_tags')
