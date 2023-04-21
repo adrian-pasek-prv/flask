@@ -3,6 +3,7 @@ import os
 # Flask imports
 from flask import Flask
 from flask_smorest import Api
+from flask_jwt_extended import JWTManager
 
 # Import SQLAlachemy related objects
 from db import db
@@ -36,6 +37,11 @@ def create_app(db_url=None):
 
     # Connect flask_smorest to Flask app
     api = Api(app)
+    
+    # Create JWT instance and config a secret key that will ensure that JWT (access token) coming from user comes from
+    # known application
+    app.config['JWT_SECRET_KEY'] = 'test'
+    jwt = JWTManager(app)
     
     # Make sure SQLAlchemy will create tables if they don't exists before first request
     @app.before_first_request
