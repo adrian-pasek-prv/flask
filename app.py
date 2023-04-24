@@ -8,6 +8,7 @@ from flask_jwt_extended import JWTManager
 # Import SQLAlachemy related objects
 from db import db
 import models
+from blocklist import BLOCKLIST
 
 # Import Blueprints
 from resources.item import blp as ItemBlueprint
@@ -46,7 +47,21 @@ def create_app(db_url=None):
     
     # Customize jwt related messages
     
+    # Check if token is on a blocklist (it expired after logging out)
+    @jwt.token_in_blocklist_loader
+    def check_if_token_in_blocklist(jwt_header, jwt_payload):
+        # return a token unique id if it's in a BLOCKLIST
+        return jwt_payload['jti'] in BLOCKLIST
     # You can add info to JWT such as if user id == 1 then it's an admin and use that info in resources
+    
+    # This will only be called when above function returns True
+    @jwt.revoked_token_loader
+    def revoked_token_callback(jwt_header, jwt_payload):
+        return (
+            jsonify({'description': 'The token has been revoked.', 'error': 'token_revoked'}),
+            401
+        )
+        
     @jwt.additional_claims_loader
     def add_claims_to_jwt(identity):
         if identity == 1:
