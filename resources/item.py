@@ -1,6 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
+from flask_jwt_extended import jwt_required, get_jwt
 
 from db import db
 from models import ItemModel
@@ -19,7 +20,13 @@ class Item(MethodView):
         item = ItemModel.query.get_or_404(item_id)
         return item
     
+    @jwt_required()
     def delete(self, item_id):
+        # Check if is_admin info is stored in JWT provided by the client
+        jwt = get_jwt()
+        if not jwt.get('is_admin'):
+            abort(401, message='Admin privlige required.')
+            
         item = ItemModel.query.get_or_404(item_id)
         db.session.delete(item)
         db.session.commit()
@@ -52,6 +59,7 @@ class ItemList(MethodView):
         return ItemModel.query.all()
     
     # Decorate function with ItemSchema marshmellow validation that returns validated "item_data" json
+    @jwt_required()
     @blp.arguments(ItemSchema)
     @blp.response(201, ItemSchema)
     def post(self, item_data):
@@ -64,7 +72,7 @@ class ItemList(MethodView):
         try:
             db.session.add(item)
             db.session.commit()
-        except SQLAlchemyError:
-            abort(500, message='An error occured while inserting the item.')
+        except SQLAlchemyError as p:
+            abort(500, message=f'An error occured while inserting the item. "{p}" ')
         
         return item

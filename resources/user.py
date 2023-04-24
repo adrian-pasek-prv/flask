@@ -2,6 +2,7 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.hash import pbkdf2_sha256
+from flask_jwt_extended import create_access_token
 
 from db import db
 from models import UserModel
@@ -28,6 +29,24 @@ class UserRegister(MethodView):
         
         return {'message': 'User created successfully.'}, 201
     
+
+@blp.route('/login')
+class UserLogin(MethodView):
+    @blp.arguments(UserSchema)
+    def post(self, user_data):
+        # Check if user exists
+        user = UserModel.query.filter(
+            UserModel.username == user_data['username']
+        ).first()
+        
+        # Check if you can match hashed version of provided password to hashed version stored in DB
+        if user and pbkdf2_sha256.verify(user_data['password'], user.password):
+            access_token = create_access_token(identity=user.id)
+            return {'access_token': access_token}
+        
+        abort(401, message='Invalid credentials.')
+            
+            
 @blp.route("/user/<int:user_id>")
 class User(MethodView):
     """
