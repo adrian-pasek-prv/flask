@@ -4,6 +4,7 @@ import os
 from flask import Flask, jsonify
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 
 # Import SQLAlachemy related objects
 from db import db
@@ -36,6 +37,9 @@ def create_app(db_url=None):
     
     # Connect flask app to SQLAlchemy
     db.init_app(app)
+    
+    # Create an instance of Migrate object
+    migrate = Migrate(app, db)
 
     # Connect flask_smorest to Flask app
     api = Api(app)
@@ -106,10 +110,6 @@ def create_app(db_url=None):
             401,
         )
     
-    # Make sure SQLAlchemy will create tables if they don't exists before first request
-    @app.before_first_request
-    def create_tables():
-        db.create_all()
 
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)
