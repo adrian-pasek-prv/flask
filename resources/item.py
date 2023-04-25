@@ -14,6 +14,7 @@ blp = Blueprint('items', __name__, description='Operations on items')
 # to Item class methods
 @blp.route('/item/<string:item_id>')
 class Item(MethodView):
+    @jwt_required()
     @blp.response(200, ItemSchema) # Decorate a successful response
     def get(self, item_id):
         # Use Flask SQLAlchemy query method to retrive item from DB
@@ -33,6 +34,7 @@ class Item(MethodView):
         return {'message': 'Item deleted.'}
     
     # Decorate function with ItemUpdateSchema marshmellow validation that returns validated "item_data" json
+    @jwt_required()
     @blp.arguments(ItemUpdateSchema)  
     @blp.response(200, ItemUpdateSchema)      
     def put(self, item_data, item_id): 
@@ -53,6 +55,7 @@ class Item(MethodView):
 
 @blp.route('/item')
 class ItemList(MethodView):
+    @jwt_required()
     @blp.response(200, ItemSchema(many=True)) # return list of items not a single item, thus we create instance of ItemSchema with many=True
     def get(self):
         # .query.all() enables to query a list of items and pass it to ItemSchema where many=True

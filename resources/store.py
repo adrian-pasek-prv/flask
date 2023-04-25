@@ -1,6 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from flask_jwt_extended import jwt_required
 
 from db import db
 from models import StoreModel
@@ -12,14 +13,17 @@ blp = Blueprint('stores', __name__, description='Operations on stores')
 
 # When calling GET/DELETE on "/store/<string:store_id>" endpoint blueprint will route these requests
 # to Store class methods
+
 @blp.route('/store/<string:store_id>')
 class Store(MethodView):
+    @jwt_required()
     @blp.response(200, StoreSchema)
     def get(self, store_id):
     # Use Flask SQLAlchemy query method to retrive item from DB:
         store = StoreModel.query.get_or_404(store_id)
         return store
     
+    @jwt_required()
     def delete(self, store_id):
         store = StoreModel.query.get_or_404(store_id)
         db.session.delete(store)
@@ -28,12 +32,14 @@ class Store(MethodView):
 
 @blp.route('/store')
 class StoreList(MethodView):
+    @jwt_required()
     @blp.response(200, StoreSchema(many=True)) # return list of stores not a single store, thus we create instance of StoreSchema with many=True
     def get(self):
         # .query.all() enables to query a list of items and pass it to ItemSchema where many=True
         return StoreModel.query.all()
     
     # Decorate function with StoreSchema marshmellow validation that returns validated "store_data" json
+    @jwt_required()
     @blp.arguments(StoreSchema)
     @blp.response(200, StoreSchema)
     def post(self, store_data):
