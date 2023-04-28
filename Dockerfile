@@ -9,5 +9,6 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 # Copy necessary files like Python scripts to WORKDIR .
 COPY . .
 # What command should run when you start container
-# 0.0.0.0 allows external clients to make a request
-CMD ["gunicorn", "--bind", "0.0.0.0:80", "app:create_app()"]
+# Run bash script called docker-entrypoint.sh
+# It has specification of what chain of commands it should use
+CMD ["/bin/bash", "docker-entrypoint.sh"]
