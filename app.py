@@ -5,6 +5,8 @@ from flask import Flask, jsonify
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
+# Package used to load enviroment variables from .env files
+from dotenv import load_dotenv
 
 # Import SQLAlachemy related objects
 from db import db
@@ -20,6 +22,8 @@ from resources.user import blp as UserBlueprint
 # Encapsulate app config and setup into a function
 def create_app(db_url=None):
     app = Flask(__name__)
+    # Find .env file and populate env variables to be seen by os.getenv
+    load_dotenv()
 
     # Propagate exceptions that exists in scripts in resources folder
     app.config['PROPAGATE_EXCEPTIONS'] = True
