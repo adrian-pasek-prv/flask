@@ -45,6 +45,8 @@ class UserRegister(MethodView):
         # Attach a task to queue with email and username argument that will be passed down to
         # send_user_registration_email
         current_app.queue.enqueue(send_user_registration_email, user.email, user.username)
+        
+        return {"message": "User created successfully."}, 201
     
 @blp.route('/login')
 class UserLogin(MethodView):
