@@ -7,6 +7,9 @@ from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 # Package used to load enviroment variables from .env files
 from dotenv import load_dotenv
+# Imports related to queues
+import redis
+from rq import Queue
 
 # Import SQLAlachemy related objects
 from db import db
@@ -25,6 +28,11 @@ def create_app(db_url=None):
     # Find .env file and populate env variables to be seen by os.getenv
     load_dotenv()
 
+    # Establish a connection to redis and create a queue
+    connection = redis.from_url(
+        os.getenv('REDIS_URL')
+    )
+    app.queue = Queue('emails', connection=connection)
     # Propagate exceptions that exists in scripts in resources folder
     app.config['PROPAGATE_EXCEPTIONS'] = True
     app.config['API_TITLE'] = 'Stores REST API'

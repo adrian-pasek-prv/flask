@@ -2,6 +2,7 @@ import requests
 import os
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from flask import current_app
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import or_
 from passlib.hash import pbkdf2_sha256
@@ -11,6 +12,9 @@ from blocklist import BLOCKLIST
 from db import db
 from models import UserModel
 from schemas import UserSchema, UserRegisterSchema
+
+# Import a task of sending an email message to user
+from tasks import send_user_registration_email
 
 blp = Blueprint('users', __name__, description='Operations on users')
 
@@ -38,15 +42,10 @@ class UserRegister(MethodView):
         db.session.add(user)
         db.session.commit()
         
-        send_simple_message(
-            to=user.email,
-            subject='Successfully signed up',
-            body=f'Hi {user.username}! You have successfully signed up to Stores REST API.'
-        )
-        
-        return {'message': 'User created successfully.'}, 201
+        # Attach a task to queue with email and username argument that will be passed down to
+        # send_user_registration_email
+        current_app.queue.enqueue(send_user_registration_email, user.email, user.username)
     
-
 @blp.route('/login')
 class UserLogin(MethodView):
     @blp.arguments(UserSchema)
